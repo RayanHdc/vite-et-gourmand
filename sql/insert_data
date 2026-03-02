@@ -1,0 +1,2 @@
+SELECT * FROM regime;
+INSERT INTO regime (libelle) VALUES ('Végétarien'), ('Vegan');
