@@ -1,7 +1,7 @@
 <?php
-require_once 'includes/connexion.php';
+require_once 'includes/host.php';
 
-
+//Vérification de la soumission du formulaire
 if (!empty($_POST)) {
 
     $mdp = $_POST['password'];

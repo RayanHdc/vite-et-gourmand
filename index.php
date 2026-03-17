@@ -1,5 +1,5 @@
 <?php 
-require_once 'includes/connexion.php';
+require_once 'includes/host.php';
 
 $sql = "SELECT * FROM regime";
 
