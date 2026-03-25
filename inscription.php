@@ -7,6 +7,7 @@ if (!empty($_POST)) {
     $mdp = $_POST['password'];
     $mdp_confirm = $_POST['confirm_password'];
 
+    //Hashage du mot de passe et insertion dans la base de données
     if ($mdp === $mdp_confirm) {
 
         $mdp_hash = password_hash($mdp, PASSWORD_DEFAULT);

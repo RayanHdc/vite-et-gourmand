@@ -3,6 +3,34 @@ require_once 'includes/host.php';
 
 session_start();
 
+//Vérification de la soumission du formulaire
+if (!empty($_POST)) {
+
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
+
+    $sql = "SELECT * FROM utilisateur WHERE email = ?";
+
+    $requete = $pdo->prepare($sql);
+    $requete->execute([$email]);
+    $user = $requete->fetch();
+
+    // Vérification du mot de passe
+    if ($user && password_verify($password, $user['password'])) {
+
+        // Stockage des informations de l'utilisateur dans la session
+        $_SESSION['user_id'] = $user['utilisateur_id'];
+        $_SESSION['user_email'] = $user['email'];
+        
+        //gestion des rôles / droits d'accès   
+        $_SESSION['user_role_id'] = $user['role_id'];
+
+        header("Location: index.php");
+        exit();
+    } else {
+        echo "<h2>Adresse e-mail ou mot de passe incorrect.</h2>";
+    }
+}
 
 ?>
 
@@ -38,4 +66,5 @@ session_start();
     </main>
 
     <footer>
+        <p>&copy; 2026 Vite et Gourmand. Tous droits réservés.</p>
     </footer>
