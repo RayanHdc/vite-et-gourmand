@@ -3,3 +3,19 @@ INSERT INTO regime (libelle) VALUES ('Végétarien'), ('Vegan');
 
 SELECT * FROM role;
 INSERT INTO role (role_id, libelle) VALUES (1, 'Administrateur'), (2, 'Employé'), (3, 'Client');
+
+INSERT INTO allergene (libelle) VALUES 
+('Gluten'), 
+('Crustacés'), 
+('Oeufs'), 
+('Poissons'), 
+('Arachides'), 
+('Soja'), 
+('Lait'), 
+('Fruits à coque'), 
+('Céleri'), 
+('Moutarde'), 
+('Graines de sésame'), 
+('Sulfite'), 
+('Lupin'), 
+('Mollusques');
