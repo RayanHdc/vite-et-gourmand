@@ -19,3 +19,12 @@ INSERT INTO allergene (libelle) VALUES
 ('Sulfite'), 
 ('Lupin'), 
 ('Mollusques');
+
+INSERT INTO type_plat (libelle) VALUES 
+('Entrée'), 
+('Plat'), 
+('Dessert');
+
+INSERT INTO utilisateur (`email`, `password`, `prenom`, `nom`, `telephone`, `ville`, `pays`, `adresse_postale`, `role_id`) 
+VALUES 
+('jose@viteetgourmand.fr', '$2y$10$/bdMBu849sq1R6DvzmBOlOWV4.PgU6mAuBOtJ4u9oJays4vlwv8vm', 'José', 'Admin', '0000000000', 'Non renseigné', 'France', '1 rue du patron', 1);
