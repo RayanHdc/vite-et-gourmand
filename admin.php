@@ -31,6 +31,7 @@ if (!isset($_SESSION['user_role_id']) || $_SESSION['user_role_id'] != 1) {
                 <li><a href="contact.php">Contact</a></li>
                 <li><a href="inscription.php">Inscription</a></li>
                 <li><a href="connexion.php">Connexion</a></li>
+                <li><a href="admin_plats.php">Gérer les plats</a></li>
             </ul>
         </nav>
     </header>

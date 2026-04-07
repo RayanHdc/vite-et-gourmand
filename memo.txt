@@ -1,0 +1,4 @@
+"J'ai bien noté que le MCD initial prévoyait un type BLOB. Cependant, en passant à la phase de développement, 
+j'ai pris la décision technique d'utiliser un système de stockage de fichiers sur le serveur (avec un VARCHAR en base). 
+J'ai fait ce choix pour optimiser les temps de chargement des pages, soulager la base de données et permettre la mise en cache des images par le navigateur. 
+C'est une pratique plus adaptée à une application web moderne."

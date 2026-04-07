@@ -26,7 +26,8 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
         $titre_plat = $_POST['titre_plat'] ?? '';
         $type_id = $_POST['type_id'] ?? null;
         $allergene_choisis = $_POST['allergene'] ?? [];
-
+    
+ 
         // Validation des données
         if ($titre_plat !== '' && $type_id !== null) {
             
@@ -51,12 +52,37 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
                     ]);
                 }
             }
-            echo "<h3>Plat ajouté avec succès !</h3>";
+
+            
+            // On sauvegarde le message dans la session
+            $_SESSION['message_succes'] = "Plat ajouté avec succès !";
+            
+            // On redirige la page vers elle-même pour vider le formulaire (PRG)
+            header("Location: admin_plats.php");
+            exit();
         } else {
             echo "<h3>Veuillez remplir tous les champs du formulaire.</h3>";
         }
     }
 
+        // Requête pour afficher les plats avec leurs types et allergènes associés
+
+        $sqlAffichage = "SELECT 
+        p.titre_plat, 
+        t.libelle AS type_nom, /* type de plat */
+        GROUP_CONCAT(a.libelle SEPARATOR ', ') AS liste_allergenes     /* liste des allergènes  */
+
+        FROM plat p    /*Equivalent à FROM plat AS p */
+        LEFT JOIN type_plat t ON p.type_id = t.type_id      /*LEFT JOIN pour inclure les plats sans type*/
+        LEFT JOIN plat_allergene pa ON p.plat_id = pa.plat_id
+        LEFT JOIN allergene a ON pa.allergene_id = a.allergene_id
+
+        GROUP BY p.plat_id      /* Groupement par plat pour éviter les doublons dans l'affichage */
+        ORDER BY p.titre_plat ASC
+        ";
+        
+        $queryListePlats = $pdo->query($sqlAffichage);
+        $liste_plats = $queryListePlats->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html> 
@@ -79,6 +105,11 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
     </nav>
 
     <section>
+        <?php if (isset($_SESSION['message_succes'])): ?>
+            <h3 style="color: green;"><?= $_SESSION['message_succes'] ?></h3>
+            <?php unset($_SESSION['message_succes']); // On efface le message pour qu'il disparaisse à la prochaine actualisation ?>
+        <?php endif; ?>
+
         <h2>Ajouter un nouveau plat</h2>
 
         <form method="POST" action="admin_plats.php">
@@ -119,6 +150,35 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </section>
 
+
+    <hr style="margin: 40px 0;"> <section>
+        <h2>Liste des plats enregistrés</h2>
+        
+        <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px;">Nom du plat</th>
+                    <th style="padding: 10px;">Type</th>
+                    <th style="padding: 10px;">Allergènes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($liste_plats)): ?>
+                    <tr>
+                        <td colspan="3" style="padding: 10px; text-align: center;">Aucun plat n'a été ajouté pour le moment.</td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($liste_plats as $plat): ?>
+                        <tr>
+                            <td style="padding: 10px;"><?= htmlspecialchars($plat['titre_plat']) ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($plat['type_nom']) ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($plat['liste_allergenes'] ?? 'Aucun') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </section>                    
 
 
     <p>Utilisez les liens ci-dessus pour gérer les différentes sections du site.</p>
