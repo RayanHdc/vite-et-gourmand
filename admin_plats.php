@@ -31,12 +31,40 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
         // Validation des données
         if ($titre_plat !== '' && $type_id !== null) {
             
+            $nom_photo = null;
+
+            // Gestion de l'upload de la photo (si une photo est fournie)
+            if (isset($_FILES['photo']) && $_FILES['photo']['error'] === UPLOAD_ERR_OK) { 
+
+                $fichier_temporaire = $_FILES['photo']['tmp_name']; 
+                $nom_fichier_original = $_FILES['photo']['name']; 
+
+                $extension = pathinfo($nom_fichier_original, PATHINFO_EXTENSION); 
+
+                $nom_photo = uniqid('plat_') . '.' . preg_replace('/[^a-zA-Z0-9-]/', '_', $titre_plat) . '.' . $extension; // Génère un nom unique pour éviter les conflits
+
+                $destination = 'uploads/plats/' . $nom_photo; 
+
+
+                // Déplace le fichier téléchargé vers le dossier de destination
+                if (move_uploaded_file($_FILES['photo']['tmp_name'], $destination)) {
+                    // Le fichier a été déplacé avec succès
+                    echo "<p>Photo téléchargée avec succès !</p>";
+                } else {
+                    // Erreur lors du déplacement du fichier
+                    echo "<p>Erreur lors du téléchargement de la photo.</p>";
+                    $nom_photo = null; // On n'associe pas de photo si le téléchargement échoue
+                }
+            }
+
+
 
             // Insertion du plat dans la base de données
-            $insertPlat = $pdo->prepare("INSERT INTO plat (titre_plat, type_id) VALUES (:titre, :type)");
+            $insertPlat = $pdo->prepare("INSERT INTO plat (titre_plat, type_id, photo) VALUES (:titre, :type, :photo)");
             $insertPlat->execute([
                 ':titre' => $titre_plat,
-                ':type' => $type_id
+                ':type' => $type_id,
+                ':photo' => $nom_photo
             ]);
 
             $nouveau_plat_id = $pdo->lastInsertId();
@@ -68,6 +96,8 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
         // Requête pour afficher les plats avec leurs types et allergènes associés
 
         $sqlAffichage = "SELECT 
+        p.plat_id,
+        p.photo,
         p.titre_plat, 
         t.libelle AS type_nom, /* type de plat */
         GROUP_CONCAT(a.libelle SEPARATOR ', ') AS liste_allergenes     /* liste des allergènes  */
@@ -112,7 +142,7 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
 
         <h2>Ajouter un nouveau plat</h2>
 
-        <form method="POST" action="admin_plats.php">
+        <form method="POST" action="admin_plats.php" enctype="multipart/form-data">
             <div>
                 <label for="titre_plat">Nom du plat :</label>
                 <input type="text" id="titre_plat" name="titre_plat" required>
@@ -128,6 +158,13 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
                     <?php endforeach; ?>
                 </select>
             </div>
+            <br>
+
+            <div>
+                <label for="photo_creation">Ajouter une photo :</label>
+                <input type="file" id="photo_creation" name="photo" accept="image/*">
+            </div>
+
             <br>
 
             <div>
@@ -160,12 +197,13 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
                     <th style="padding: 10px;">Nom du plat</th>
                     <th style="padding: 10px;">Type</th>
                     <th style="padding: 10px;">Allergènes</th>
+                    <th style="padding: 10px;">Photo</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($liste_plats)): ?>
                     <tr>
-                        <td colspan="3" style="padding: 10px; text-align: center;">Aucun plat n'a été ajouté pour le moment.</td>
+                        <td colspan="4" style="padding: 10px; text-align: center;">Aucun plat n'a été ajouté pour le moment.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($liste_plats as $plat): ?>
@@ -173,6 +211,20 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
                             <td style="padding: 10px;"><?= htmlspecialchars($plat['titre_plat']) ?></td>
                             <td style="padding: 10px;"><?= htmlspecialchars($plat['type_nom']) ?></td>
                             <td style="padding: 10px;"><?= htmlspecialchars($plat['liste_allergenes'] ?? 'Aucun') ?></td>
+                            <td style="padding: 10px; text-align: center;">
+                                
+                            <?php if (!empty($plat['photo'])): ?>
+                                    <img src="uploads/plats/<?= htmlspecialchars($plat['photo']) ?>" alt=" Photo de <?= htmlspecialchars($plat['titre_plat']) ?>" style="max-width: 80px; height: auto; border-radius: 5px; border: 1px solid #ccc;">
+                                
+                                    <?php else: ?>
+                                    <form method="POST" action="upload_photo.php" enctype="multipart/form-data">
+                                        <input type="hidden" name="plat_id" value="<?= $plat['plat_id'] ?>"> <!-- On ajoute un champ caché pour identifier le plat auquel on veut associer la photo -->
+                                        <input type="file" name="photo" accept="image/*" required> <!-- On ajoute seulement une photo -->
+                                        <button type="submit">Ajouter une photo</button>
+                                    </form>
+                                    <span>Aucune photo</span>
+                                <?php endif; ?>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>

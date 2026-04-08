@@ -47,7 +47,7 @@ CREATE TABLE utilisateur (
 CREATE TABLE plat (
     plat_id INT AUTO_INCREMENT PRIMARY KEY,
     titre_plat VARCHAR(50),
-    photo BLOB,
+    photo VARCHAR(255),
     type_id INT NOT NULL,
     FOREIGN KEY (type_id) REFERENCES type_plat(type_id)
     );

@@ -1,4 +1,17 @@
+// UPLOAD PHOTO //
+
 "J'ai bien noté que le MCD initial prévoyait un type BLOB. Cependant, en passant à la phase de développement, 
 j'ai pris la décision technique d'utiliser un système de stockage de fichiers sur le serveur (avec un VARCHAR en base). 
 J'ai fait ce choix pour optimiser les temps de chargement des pages, soulager la base de données et permettre la mise en cache des images par le navigateur. 
 C'est une pratique plus adaptée à une application web moderne."
+
+
+// BOUTON MODIFIER TABLEAU //
+"J'aurais pu tout faire en PHP, mais cela obligeait la page à se recharger à chaque ajout d'image. J'ai voulu privilégier l'expérience utilisateur (UX). 
+Le PHP reste le cœur du système, c'est lui qui sécurise et enregistre l'image. Le JavaScript, lui, agit uniquement comme un pont pour rendre l'interface plus dynamique et agréable, comme sur une application moderne."
+"J'utilise un input de type 'hidden' pour transmettre l'ID du plat au serveur de manière transparente.
+Cela permet au backend de savoir exactement quelle ligne de la base de données il doit mettre à jour, sans polluer l'interface visuelle de l'utilisateur."
+
+"J'ai évalué la possibilité de faire un upload asynchrone en JavaScript pour éviter le rechargement de la page. Cependant, pour une interface d'administration métier, 
+j'ai préféré appliquer le principe de simplicité (KISS). J'ai opté pour un cycle de requête classique 100% PHP. 
+Cela me garantit un code ultra-robuste, facile à maintenir, tout en remplissant parfaitement le cahier des charges fonctionnel."
