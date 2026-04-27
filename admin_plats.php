@@ -128,7 +128,7 @@ $types = $queryTypes->fetchAll(PDO::FETCH_ASSOC);
     <nav>
         <ul>
             <li><a href="admin_users.php">Gérer les utilisateurs</a></li>
-            <li><a href="admin.php">Gérer les menus</a></li>
+            <li><a href="admin_menus.php">Gérer les menus</a></li>
             <li><a href="admin_plats.php">Gérer les plats</a></li>
             <li><a href="admin_settings.php">Gérer les paramètres</a></li>
         </ul>
