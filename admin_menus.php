@@ -2,6 +2,13 @@
 require_once 'includes/host.php';
 session_start();
 
+// Vérification des droits d'accès
+if (!isset($_SESSION['user_role_id']) || $_SESSION['user_role_id'] != 1) {
+    header("Location: index.php");
+    exit();
+}
+
+
 $themes = $pdo -> query("SELECT * FROM theme ORDER BY libelle ASC")->fetchAll(PDO::FETCH_ASSOC);
 $regimes = $pdo -> query("SELECT * FROM regime ORDER BY libelle ASC")->fetchAll(PDO::FETCH_ASSOC);
 $plats = $pdo -> query("SELECT plat_id, titre_plat, photo FROM plat ORDER BY titre_plat ASC")->fetchAll(PDO::FETCH_ASSOC);
@@ -61,6 +68,31 @@ if (!empty($_POST)) {
         exit();
     }
 }
+
+        // Requête pour afficher les menus avec leurs thèmes et régimes associés ainsi que prix et nbr personne min
+
+        $sqlAffichage = "SELECT 
+        m.menu_id,
+        m.titre,
+        th.libelle AS theme_nom,
+        m.nombre_personne_minimum,
+        m.prix_par_personne,
+        m.quantite_restante,
+        r.libelle AS regime_nom,
+        COUNT(mp.plat_id) AS nb_plats,
+        GROUP_CONCAT(p.titre_plat SEPARATOR ' <br>• ') AS liste_plats   /*Réunis tout en 1 ligne avec séparation*/
+
+        FROM menu m    /*Equivalent à FROM menu AS m */
+        LEFT JOIN theme th ON m.theme_id = th.theme_id      
+        LEFT JOIN regime r ON m.regime_id = r.regime_id
+        LEFT JOIN menu_plat mp ON m.menu_id = mp.menu_id
+        LEFT JOIN plat p ON mp.plat_id = p.plat_id
+
+        GROUP BY m.menu_id
+        ORDER BY m.titre ASC";
+        
+        $queryListeMenus = $pdo->query($sqlAffichage);
+        $liste_menus = $queryListeMenus->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
 
@@ -167,6 +199,56 @@ if (!empty($_POST)) {
                 <button type="submit">Enregistrer le menu</button>
             </form>
         </section>
+
+        <hr style="margin: 40px 0;"> <section>
+        <h2>Liste des menus enregistrés</h2>
+        
+        <table border="1" style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #f2f2f2;">
+                    <th style="padding: 10px;">Nom du menu</th>
+                    <th style="padding: 10px;">Thème</th>
+                    <th style="padding: 10px;">Plats inclus</th>
+                    <th style="padding: 10px;">Régimes</th>
+                    <th style="padding: 10px;">Nombre personne Min</th>
+                    <th style="padding: 10px;">Prix par personne</th>
+                    <th style="padding: 10px;">Quantités restantes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($liste_menus)): ?>
+                    <tr>
+                        <td colspan="4" style="padding: 10px; text-align: center;">Aucun menu n'a été ajouté pour le moment.</td>
+                    </tr>
+                            
+                <?php else: ?>
+                    <?php foreach ($liste_menus as $menu): ?>
+                        <tr>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['titre']) ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['theme_nom']) ?></td>
+                            <td style="padding: 10px;">
+                                <?php if ($menu['nb_plats'] > 0): ?>
+                                    <details style="cursor: pointer;">
+                                        <summary style="font-weight: bold; color: #007BFF;">
+                                            <?= htmlspecialchars($menu['nb_plats']) ?> plat(s)
+                                        </summary>
+                                        <div style="margin-top: 8px; font-size: 0.9em; color: #555; padding-left: 10px; border-left: 2px solid #007BFF;">
+                                            • <?= $menu['liste_plats'] //Affichage des plats ?> 
+                                        </div>
+                                    </details>
+                                <?php else: ?>
+                            <span style="color: #999; font-style: italic;">Aucun plat</span>
+                        <?php endif; ?>
+                    </td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['regime_nom'] ?? 'Aucun') ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['nombre_personne_minimum']) ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['prix_par_personne']) ?></td>
+                            <td style="padding: 10px;"><?= htmlspecialchars($menu['quantite_restante']) ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </main>
 </body>
 </html>
